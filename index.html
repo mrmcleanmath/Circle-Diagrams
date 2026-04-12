@@ -1,0 +1,1880 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Circle Diagrams Practice - Mr. McLean Math</title>
+  <style>
+    :root{
+      --bg:#07111f;
+      --panel:#101b2d;
+      --panel-2:#14223a;
+      --panel-3:#1a2b49;
+      --text:#eef4ff;
+      --muted:#afbdd8;
+      --accent:#ffd166;
+      --good:#45d483;
+      --bad:#ff6b6b;
+      --line:#2a3d60;
+      --input:#0c1728;
+      --chip:#223657;
+      --shadow:0 18px 42px rgba(0,0,0,.35);
+      --btn:#28446e;
+      --btn-hover:#345789;
+    }
+
+    body.light{
+      --bg:#eef4fb;
+      --panel:#ffffff;
+      --panel-2:#f7f9fc;
+      --panel-3:#eef3f9;
+      --text:#13233c;
+      --muted:#5f6f88;
+      --accent:#d89b00;
+      --good:#159957;
+      --bad:#d64545;
+      --line:#d7e0ec;
+      --input:#ffffff;
+      --chip:#edf3fa;
+      --shadow:0 12px 28px rgba(0,0,0,.10);
+      --btn:#2e5e96;
+      --btn-hover:#3971b2;
+    }
+
+    body.high-contrast{
+      --bg:#000;
+      --panel:#000;
+      --panel-2:#070707;
+      --panel-3:#111;
+      --text:#fff;
+      --muted:#f0f0f0;
+      --accent:#ffff00;
+      --good:#00ff66;
+      --bad:#ff4040;
+      --line:#fff;
+      --input:#000;
+      --chip:#111;
+      --shadow:none;
+      --btn:#000;
+      --btn-hover:#222;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    body{min-height:100vh}
+
+    .wrap{
+      max-width:1320px;
+      margin:0 auto;
+      padding:18px;
+    }
+
+    .app{
+      display:grid;
+      grid-template-columns:370px 1fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .side{
+      padding:18px;
+      position:sticky;
+      top:18px;
+      align-self:start;
+    }
+
+    .main{
+      padding:18px;
+      min-height:760px;
+    }
+
+    h1{
+      margin:0 0 8px;
+      font-size:32px;
+      line-height:1.1;
+    }
+
+    h2{
+      margin:0 0 10px;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:14px;
+      margin-bottom:16px;
+    }
+
+    .section-title{
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      color:var(--accent);
+      margin:20px 0 10px;
+      font-weight:700;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+    }
+
+    .stack{
+      display:grid;
+      gap:10px;
+    }
+
+    .btn{
+      width:100%;
+      border:none;
+      border-radius:14px;
+      padding:12px 14px;
+      background:var(--btn);
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+      transition:.15s ease;
+      font-size:14px;
+    }
+
+    .btn:hover{background:var(--btn-hover)}
+
+    .btn.secondary{
+      background:var(--chip);
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    .btn.active{
+      outline:3px solid var(--accent);
+      background:var(--panel-3);
+      color:var(--text);
+    }
+
+    .btn.good{
+      background:var(--good);
+      color:#072216;
+    }
+
+    .btn.warn{
+      background:var(--accent);
+      color:#2f2100;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .stat{
+      background:var(--panel-2);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+    }
+
+    .stat-label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+
+    .stat-value{
+      font-size:24px;
+      font-weight:700;
+    }
+
+    .pill{
+      background:var(--chip);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      color:var(--text);
+    }
+
+    .small-note{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    .card{
+      background:var(--panel-2);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:18px;
+    }
+
+    .question-title{
+      font-size:22px;
+      margin:0 0 12px;
+    }
+
+    .scenario{
+      font-size:18px;
+      line-height:1.45;
+      margin-bottom:12px;
+      min-height:56px;
+    }
+
+    .prompt{
+      font-size:20px;
+      font-weight:700;
+      margin:16px 0 10px;
+      min-height:48px;
+    }
+
+    .answer-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    input[type="text"]{
+      flex:1 1 260px;
+      background:var(--input);
+      color:var(--text);
+      border:2px solid var(--line);
+      border-radius:14px;
+      padding:14px 14px;
+      font-size:20px;
+      outline:none;
+    }
+
+    input[type="text"]:focus{
+      border-color:var(--accent);
+    }
+
+    .feedback{
+      min-height:28px;
+      margin-top:10px;
+      font-size:18px;
+      font-weight:700;
+    }
+
+    .feedback.good{color:var(--good)}
+    .feedback.bad{color:var(--bad)}
+
+    .hint{
+      margin-top:8px;
+      font-size:15px;
+      color:var(--muted);
+      min-height:22px;
+    }
+
+    .summary-box{
+      margin-top:14px;
+      background:var(--panel-3);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .summary-box h3{
+      margin:0 0 10px;
+      font-size:18px;
+    }
+
+    .summary-box ul{
+      margin:0;
+      padding-left:18px;
+      line-height:1.6;
+    }
+
+    .visual-frame{
+      display:grid;
+      gap:14px;
+      justify-items:center;
+    }
+
+    .svg-box{
+      width:min(100%,420px);
+      aspect-ratio:1/1;
+      display:grid;
+      place-items:center;
+    }
+
+    .legend{
+      width:100%;
+      display:grid;
+      gap:8px;
+    }
+
+    .legend-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:15px;
+    }
+
+    .swatch{
+      width:18px;
+      height:18px;
+      border-radius:4px;
+      border:1px solid rgba(255,255,255,.65);
+      flex:0 0 auto;
+    }
+
+    body.light .swatch{
+      border-color:rgba(0,0,0,.35);
+    }
+
+    .diagram-caption{
+      font-size:14px;
+      color:var(--muted);
+      text-align:center;
+      min-height:20px;
+    }
+
+    .table-wrap{
+      width:100%;
+      overflow-x:auto;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      overflow:hidden;
+      border-radius:16px;
+      font-size:16px;
+      border:1px solid var(--line);
+    }
+
+    th,td{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+    }
+
+    th{background:var(--panel-3)}
+    tr:last-child td{border-bottom:none}
+
+    .worksheet-toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .worksheet-page{
+      display:grid;
+      gap:16px;
+    }
+
+    .worksheet-item{
+      background:var(--panel-2);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+    }
+
+    .worksheet-item h3{
+      margin:0 0 10px;
+      font-size:20px;
+    }
+
+    .worksheet-item .qpart{
+      margin:8px 0;
+      font-size:16px;
+      line-height:1.45;
+    }
+
+    .answer-key{
+      margin-top:20px;
+      background:var(--panel-2);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+    }
+
+    .answer-key h3{margin:0 0 10px}
+    .answer-key .ak{margin:8px 0; line-height:1.55}
+
+    .hidden{display:none !important}
+    .center{text-align:center}
+
+    @media (max-width:1020px){
+      .app{grid-template-columns:1fr}
+      .side{position:relative; top:0}
+      .hero{grid-template-columns:1fr}
+    }
+
+    @media print{
+      body{
+        background:#fff;
+        color:#000;
+      }
+      .side,
+      .worksheet-toolbar{
+        display:none !important;
+      }
+      .main,
+      .panel,
+      .card,
+      .worksheet-item,
+      .answer-key{
+        box-shadow:none !important;
+        border:1px solid #999 !important;
+        background:#fff !important;
+        color:#000 !important;
+      }
+      .hidden{
+        display:block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="app">
+      <aside class="panel side">
+        <h1>Circle Diagrams Practice</h1>
+        <div class="sub">Created by Mr. McLean Math</div>
+
+        <div class="section-title">Mode</div>
+        <div class="grid-2">
+          <button class="btn active" id="modeRegularBtn" type="button">Regular</button>
+          <button class="btn secondary" id="modeAdvancedBtn" type="button">Advanced</button>
+        </div>
+
+        <div class="section-title">Play Type</div>
+        <div class="grid-2">
+          <button class="btn active" id="gameModeBtn" type="button">Game</button>
+          <button class="btn secondary" id="worksheetModeBtn" type="button">Worksheet</button>
+        </div>
+
+        <div class="section-title">Worksheet Size</div>
+        <div class="grid-3">
+          <button class="btn secondary" data-ws="5" type="button">5</button>
+          <button class="btn secondary active" data-ws="10" type="button">10</button>
+          <button class="btn secondary" data-ws="15" type="button">15</button>
+        </div>
+
+        <div class="section-title">Timer</div>
+        <div class="grid-2">
+          <button class="btn secondary active" data-timer="0" type="button">Off</button>
+          <button class="btn secondary" data-timer="30" type="button">30 s</button>
+          <button class="btn secondary" data-timer="60" type="button">60 s</button>
+          <button class="btn secondary" data-timer="90" type="button">90 s</button>
+          <button class="btn secondary" data-timer="120" type="button">120 s</button>
+        </div>
+
+        <div class="section-title">Options</div>
+        <div class="grid-2">
+          <button class="btn secondary" id="soundBtn" type="button">Sound: Off</button>
+          <button class="btn secondary" id="contrastBtn" type="button">High Contrast: Off</button>
+          <button class="btn secondary" id="themeBtn" type="button">Theme: Dark</button>
+          <button class="btn secondary" id="newSetBtn" type="button">New Set</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label">Question</div>
+            <div class="stat-value" id="statQuestion">0 / 0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Step</div>
+            <div class="stat-value" id="statStep">0 / 0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Score</div>
+            <div class="stat-value" id="statScore">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Accuracy</div>
+            <div class="stat-value" id="statAccuracy">0%</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Streak</div>
+            <div class="stat-value" id="statStreak">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Timer</div>
+            <div class="stat-value" id="statTimer">Off</div>
+          </div>
+        </div>
+
+        <div class="section-title">Quick Notes</div>
+        <div class="stack">
+          <div class="pill">Only clean solvable diagrams</div>
+          <div class="pill">One sub-question at a time</div>
+          <div class="pill">Non-auto-advance</div>
+          <div class="pill">Calculator shown when allowed</div>
+        </div>
+      </aside>
+
+      <main class="panel main">
+        <div id="gameView">
+          <div class="hero">
+            <section class="card">
+              <h2 class="question-title" id="questionTitle">Question</h2>
+              <div class="scenario" id="scenarioText"></div>
+              <div class="prompt" id="promptText"></div>
+
+              <div class="answer-row">
+                <input id="answerInput" type="text" autocomplete="off" inputmode="decimal" placeholder="">
+                <button class="btn warn" id="checkBtn" type="button" style="max-width:150px">Check</button>
+                <button class="btn good hidden" id="nextBtn" type="button" style="max-width:150px">Next</button>
+              </div>
+
+              <div class="feedback" id="feedback"></div>
+              <div class="hint" id="hint"></div>
+              <div id="summaryMount"></div>
+            </section>
+
+            <section class="card visual-frame">
+              <div id="visualMount" class="svg-box"></div>
+              <div id="legendMount" class="legend"></div>
+              <div class="diagram-caption" id="diagramCaption"></div>
+            </section>
+          </div>
+        </div>
+
+        <div id="worksheetView" class="hidden">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+            <div>
+              <h2>Worksheet Mode</h2>
+              <div class="small-note">Generates full grouped questions with a final answer key.</div>
+            </div>
+            <div class="worksheet-toolbar">
+              <button class="btn warn" id="generateWorksheetBtn" type="button">Generate Worksheet</button>
+              <button class="btn secondary" id="printWorksheetBtn" type="button">Print</button>
+            </div>
+          </div>
+          <div id="worksheetMount" class="worksheet-page"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const app = {
+      mode: 'regular',
+      playType: 'game',
+      worksheetSize: 10,
+      timerSeconds: 0,
+      sound: false,
+      highContrast: false,
+      lightTheme: false,
+      questions: [],
+      qIndex: 0,
+      stepIndex: 0,
+      score: 0,
+      correctCount: 0,
+      totalChecked: 0,
+      streak: 0,
+      remainingTime: 0,
+      timerId: null,
+      currentAttempts: 0
+    };
+
+    const els = {
+      modeRegularBtn: document.getElementById('modeRegularBtn'),
+      modeAdvancedBtn: document.getElementById('modeAdvancedBtn'),
+      gameModeBtn: document.getElementById('gameModeBtn'),
+      worksheetModeBtn: document.getElementById('worksheetModeBtn'),
+      soundBtn: document.getElementById('soundBtn'),
+      contrastBtn: document.getElementById('contrastBtn'),
+      themeBtn: document.getElementById('themeBtn'),
+      newSetBtn: document.getElementById('newSetBtn'),
+
+      statQuestion: document.getElementById('statQuestion'),
+      statStep: document.getElementById('statStep'),
+      statScore: document.getElementById('statScore'),
+      statAccuracy: document.getElementById('statAccuracy'),
+      statStreak: document.getElementById('statStreak'),
+      statTimer: document.getElementById('statTimer'),
+
+      questionTitle: document.getElementById('questionTitle'),
+      scenarioText: document.getElementById('scenarioText'),
+      promptText: document.getElementById('promptText'),
+      answerInput: document.getElementById('answerInput'),
+      checkBtn: document.getElementById('checkBtn'),
+      nextBtn: document.getElementById('nextBtn'),
+      feedback: document.getElementById('feedback'),
+      hint: document.getElementById('hint'),
+      summaryMount: document.getElementById('summaryMount'),
+
+      visualMount: document.getElementById('visualMount'),
+      legendMount: document.getElementById('legendMount'),
+      diagramCaption: document.getElementById('diagramCaption'),
+
+      gameView: document.getElementById('gameView'),
+      worksheetView: document.getElementById('worksheetView'),
+      worksheetMount: document.getElementById('worksheetMount'),
+      generateWorksheetBtn: document.getElementById('generateWorksheetBtn'),
+      printWorksheetBtn: document.getElementById('printWorksheetBtn'),
+
+      worksheetSizeBtns: [...document.querySelectorAll('[data-ws]')],
+      timerBtns: [...document.querySelectorAll('[data-timer]')]
+    };
+
+    const STRONG_COLORS = [
+      '#2F80ED',
+      '#EB5757',
+      '#27AE60',
+      '#F2C94C',
+      '#9B51E0',
+      '#F2994A',
+      '#00B8D9',
+      '#D81B60'
+    ];
+
+    const REGULAR_READ_BANK = [
+      {labels:['Cats','Dogs'], perc:[50,50]},
+      {labels:['Eat school lunch','Do not eat school lunch'], perc:[90,10]},
+      {labels:['Bus','Walk'], perc:[75,25]},
+      {labels:['Red','Blue','Green','Yellow'], perc:[25,25,25,25]},
+      {labels:['Reading','Gaming','Sports'], perc:[50,30,20]},
+      {labels:['Cats','Dogs','Fish'], perc:[50,30,20]},
+      {labels:['Pizza','Tacos','Pasta','Soup'], perc:[40,30,20,10]},
+      {labels:['Football','Basketball','Tennis','Swimming'], perc:[50,25,20,5]},
+      {labels:['Train','Bus','Bike','Walk'], perc:[50,20,20,10]},
+      {labels:['Math','English','Science','Art'], perc:[40,20,20,20]},
+      {labels:['Blue','Red','Green'], perc:[75,20,5]},
+      {labels:['Apple','Orange','Banana','Pear','Grapes'], perc:[25,25,20,20,10]}
+    ];
+
+    const REGULAR_PERCENT_TO_QTY_BANK = [
+      {labels:['Cats','Dogs','Fish'], perc:[50,30,20], totals:[100,200,400]},
+      {labels:['Red','Blue','Green','Yellow'], perc:[25,25,25,25], totals:[200,400,800]},
+      {labels:['Walk','Bus','Bike'], perc:[50,25,25], totals:[120,240,480]},
+      {labels:['Train','Bus','Bike','Walk'], perc:[50,20,20,10], totals:[100,200,500]},
+      {labels:['Football','Basketball','Tennis','Swimming'], perc:[40,30,20,10], totals:[100,200,500]}
+    ];
+
+    function randInt(min, max){
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function pick(arr){
+      return arr[randInt(0, arr.length - 1)];
+    }
+
+    function shuffle(arr){
+      const copy = [...arr];
+      for(let i = copy.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function gcd(a, b){
+      a = Math.abs(a);
+      b = Math.abs(b);
+      while(b){
+        const t = b;
+        b = a % b;
+        a = t;
+      }
+      return a || 1;
+    }
+
+    function simplifyFraction(n, d){
+      const g = gcd(n, d);
+      return [n / g, d / g];
+    }
+
+    function round1(n){
+      return Math.round(n * 10) / 10;
+    }
+
+    function formatNumber(n){
+      if(Number.isInteger(n)) return String(n);
+      return String(round1(n)).replace(/\.0$/, '');
+    }
+
+    function toPercentText(n){
+      return formatNumber(n) + '%';
+    }
+
+    function toDegreeText(n){
+      return formatNumber(n) + ' degrees';
+    }
+
+    function normalizeAnswer(text){
+      return text
+        .trim()
+        .replace(/,/g, '.')
+        .replace(/degrees?/gi, '')
+        .replace(/deg/gi, '')
+        .replace(/°/g, '')
+        .replace(/%/g, '')
+        .replace(/\s+/g, '');
+    }
+
+    function isNumberString(raw){
+      return /^-?\d+(?:\.\d+)?$/.test(raw);
+    }
+
+    function numberCheck(expected){
+      return raw => {
+        if(!isNumberString(raw)) return false;
+        return Math.abs(Number(raw) - expected) < 0.000001;
+      };
+    }
+
+    function wholeCheck(expected){
+      return raw => {
+        if(!isNumberString(raw)) return false;
+        return Math.abs(Number(raw) - expected) < 0.000001;
+      };
+    }
+
+    function fractionCheck(n, d){
+      return raw => {
+        if(!/^\d+\/\d+$/.test(raw)) return false;
+        const [a, b] = raw.split('/').map(Number);
+        if(b === 0) return false;
+        const simp = simplifyFraction(a, b);
+        return simp[0] === n && simp[1] === d;
+      };
+    }
+
+    function playBeep(type = 'ok'){
+      if(!app.sound) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if(!AudioCtx) return;
+
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.value = type === 'ok' ? 720 : 260;
+      gain.gain.value = 0.03;
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.12);
+    }
+
+    function setActiveButton(buttons, activeButton){
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if(!btn.classList.contains('secondary') && btn !== activeButton){
+          btn.classList.add('secondary');
+        }
+      });
+      activeButton.classList.add('active');
+      activeButton.classList.remove('secondary');
+    }
+
+    function updateStatCards(){
+      const totalQuestions = app.questions.length;
+      const currentQuestion = app.questions[app.qIndex];
+      const totalSteps = currentQuestion ? currentQuestion.steps.length : 0;
+      const currentQuestionNumber = totalQuestions ? Math.min(app.qIndex + 1, totalQuestions) : 0;
+      const currentStepNumber = currentQuestion && app.stepIndex < totalSteps ? app.stepIndex + 1 : (currentQuestion ? totalSteps : 0);
+
+      els.statQuestion.textContent = currentQuestionNumber + ' / ' + totalQuestions;
+      els.statStep.textContent = currentStepNumber + ' / ' + totalSteps;
+      els.statScore.textContent = app.score;
+
+      const accuracy = app.totalChecked ? Math.round((app.correctCount / app.totalChecked) * 100) : 0;
+      els.statAccuracy.textContent = accuracy + '%';
+      els.statStreak.textContent = app.streak;
+      els.statTimer.textContent = app.timerSeconds ? (app.remainingTime + 's') : 'Off';
+    }
+
+    function showCheckButton(){
+      els.checkBtn.classList.remove('hidden');
+      els.nextBtn.classList.add('hidden');
+    }
+
+    function showNextButton(){
+      els.checkBtn.classList.add('hidden');
+      els.nextBtn.classList.remove('hidden');
+    }
+
+    function resetGameState(){
+      clearInterval(app.timerId);
+      app.qIndex = 0;
+      app.stepIndex = 0;
+      app.score = 0;
+      app.correctCount = 0;
+      app.totalChecked = 0;
+      app.streak = 0;
+      app.remainingTime = app.timerSeconds;
+      app.currentAttempts = 0;
+      els.answerInput.disabled = false;
+      showCheckButton();
+      updateStatCards();
+    }
+
+    function startTimer(){
+      clearInterval(app.timerId);
+      app.remainingTime = app.timerSeconds;
+      updateStatCards();
+
+      if(!app.timerSeconds) return;
+
+      app.timerId = setInterval(() => {
+        app.remainingTime--;
+        updateStatCards();
+        if(app.remainingTime <= 0){
+          clearInterval(app.timerId);
+          handleTimeout();
+        }
+      }, 1000);
+    }
+
+    function handleTimeout(){
+      const question = app.questions[app.qIndex];
+      if(!question) return;
+      const step = question.steps[app.stepIndex];
+
+      app.totalChecked++;
+      app.streak = 0;
+
+      els.feedback.textContent = 'Time is up. The answer was ' + step.answerDisplay + '.';
+      els.feedback.className = 'feedback bad';
+      els.hint.textContent = step.explanation || step.hint || '';
+
+      showNextButton();
+      playBeep('bad');
+      updateStatCards();
+    }
+
+    function polar(cx, cy, r, angleDeg){
+      const rad = (angleDeg - 90) * Math.PI / 180;
+      return {
+        x: cx + r * Math.cos(rad),
+        y: cy + r * Math.sin(rad)
+      };
+    }
+
+    function sectorPath(cx, cy, r, startAngle, endAngle){
+      const start = polar(cx, cy, r, endAngle);
+      const end = polar(cx, cy, r, startAngle);
+      const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+      return [
+        'M', cx, cy,
+        'L', start.x, start.y,
+        'A', r, r, 0, largeArcFlag, 0, end.x, end.y,
+        'Z'
+      ].join(' ');
+    }
+
+    function buildPercentTickMarks(cx, cy, r, stepPercent){
+      if(!stepPercent || stepPercent <= 0) return '';
+      const stepAngle = stepPercent * 3.6;
+      const marks = [];
+
+      for(let a = 0; a < 360; a += stepAngle){
+        const normalized = Math.round(a) % 360;
+        const isMajor = normalized % 90 === 0;
+        const outer = polar(cx, cy, r + (isMajor ? 10 : 6), a);
+        const inner = polar(cx, cy, r - (isMajor ? 12 : 6), a);
+        marks.push(
+          '<line x1="' + inner.x + '" y1="' + inner.y + '" x2="' + outer.x + '" y2="' + outer.y + '" stroke="var(--text)" stroke-width="' + (isMajor ? 2.5 : 1.6) + '"></line>'
+        );
+      }
+
+      return marks.join('');
+    }
+
+    function describeLegendItem(item){
+      if(item.showPercent) return item.label + ': ' + toPercentText(item.percent);
+      if(item.showAngle) return item.label + ': ' + toDegreeText(item.angle);
+      return item.label;
+    }
+
+    function renderLegend(question){
+      els.legendMount.innerHTML = '';
+      if(question.kind === 'table') return;
+
+      question.sectors.forEach(sector => {
+        const row = document.createElement('div');
+        row.className = 'legend-item';
+
+        const swatch = document.createElement('div');
+        swatch.className = 'swatch';
+        swatch.style.background = sector.color;
+
+        const text = document.createElement('div');
+        text.textContent = describeLegendItem(sector);
+
+        row.appendChild(swatch);
+        row.appendChild(text);
+        els.legendMount.appendChild(row);
+      });
+    }
+
+    function renderPie(question){
+      const cx = 200;
+      const cy = 200;
+      const r = 150;
+      let currentAngle = 0;
+      const parts = [];
+      const overlays = [];
+
+      question.sectors.forEach(sector => {
+        const endAngle = currentAngle + sector.angle;
+
+        parts.push(
+          '<path d="' + sectorPath(cx, cy, r, currentAngle, endAngle) + '" fill="' + sector.color + '" stroke="var(--line)" stroke-width="2.5"></path>'
+        );
+
+        const mid = currentAngle + sector.angle / 2;
+
+        if(sector.labelInside){
+          const labelPos = polar(cx, cy, r * 0.58, mid);
+          overlays.push(
+            '<text x="' + labelPos.x + '" y="' + labelPos.y + '" fill="var(--text)" font-size="15" text-anchor="middle" dominant-baseline="middle" font-weight="700">' + sector.labelInside + '</text>'
+          );
+        }
+
+        if(sector.showAngleInDiagram){
+          const anglePos = polar(cx, cy, r * 0.34, mid);
+          overlays.push(
+            '<text x="' + anglePos.x + '" y="' + anglePos.y + '" fill="var(--text)" font-size="16" text-anchor="middle" dominant-baseline="middle">' + formatNumber(sector.angle) + '°</text>'
+          );
+        }
+
+        currentAngle = endAngle;
+      });
+
+      els.visualMount.innerHTML =
+        '<svg viewBox="0 0 400 400" width="100%" height="100%" aria-label="Circle diagram">' +
+          '<rect width="400" height="400" fill="transparent"></rect>' +
+          parts.join('') +
+          buildPercentTickMarks(cx, cy, r, question.percentTickStep || 0) +
+          overlays.join('') +
+          '<circle cx="200" cy="200" r="150" fill="none" stroke="var(--line)" stroke-width="3"></circle>' +
+        '</svg>';
+    }
+
+    function renderTable(question){
+      const rows = question.rows.map(row => {
+        return '<tr><td>' + row.label + '</td><td>' + row.count + '</td></tr>';
+      }).join('');
+
+      els.visualMount.innerHTML =
+        '<div class="table-wrap">' +
+          '<table>' +
+            '<thead><tr><th>' + (question.tableHeadLeft || 'Category') + '</th><th>' + (question.tableHeadRight || 'Count') + '</th></tr></thead>' +
+            '<tbody>' + rows + '</tbody>' +
+          '</table>' +
+        '</div>';
+
+      els.legendMount.innerHTML = '';
+    }
+
+    function renderQuestion(){
+      const question = app.questions[app.qIndex];
+      if(!question){
+        renderEndScreen();
+        return;
+      }
+
+      const step = question.steps[app.stepIndex];
+      app.currentAttempts = 0;
+
+      els.questionTitle.textContent = 'Question ' + (app.qIndex + 1);
+      els.scenarioText.textContent = question.scenario;
+      els.promptText.textContent = step.prompt;
+      els.feedback.textContent = '';
+      els.feedback.className = 'feedback';
+      els.hint.textContent = '';
+      els.summaryMount.innerHTML = '';
+      els.answerInput.value = '';
+      els.answerInput.placeholder = '';
+      els.answerInput.inputMode = step.inputMode || 'decimal';
+
+      renderLegend(question);
+      els.diagramCaption.textContent = question.caption || '';
+
+      if(question.kind === 'pie'){
+        renderPie(question);
+      }else{
+        renderTable(question);
+      }
+
+      showCheckButton();
+      startTimer();
+      updateStatCards();
+      els.answerInput.focus();
+    }
+
+    function showScenarioSummary(question){
+      clearInterval(app.timerId);
+
+      const items = question.steps.map((step, index) => {
+        const letter = String.fromCharCode(65 + index);
+        return '<li>' + letter + ': ' + step.answerDisplay + '</li>';
+      }).join('');
+
+      els.summaryMount.innerHTML =
+        '<div class="summary-box">' +
+          '<h3>Question ' + (app.qIndex + 1) + ' complete</h3>' +
+          '<ul>' + items + '</ul>' +
+        '</div>';
+
+      els.feedback.textContent = 'Press Next to continue.';
+      els.feedback.className = 'feedback good';
+      els.hint.textContent = '';
+      showNextButton();
+
+      app.stepIndex = question.steps.length;
+      updateStatCards();
+    }
+
+    function renderEndScreen(){
+      clearInterval(app.timerId);
+      const accuracy = app.totalChecked ? Math.round((app.correctCount / app.totalChecked) * 100) : 0;
+
+      els.questionTitle.textContent = app.mode === 'regular' ? 'Regular mode complete' : 'Advanced mode complete';
+      els.scenarioText.innerHTML =
+        'You completed the set.<br><br>' +
+        '<strong>Score:</strong> ' + app.score + '<br>' +
+        '<strong>Correct checks:</strong> ' + app.correctCount + '<br>' +
+        '<strong>Total checks:</strong> ' + app.totalChecked + '<br>' +
+        '<strong>Accuracy:</strong> ' + accuracy + '%';
+
+      els.promptText.textContent = 'Press New Set to generate another game, or switch to worksheet mode.';
+      els.feedback.textContent = '';
+      els.hint.textContent = '';
+      els.summaryMount.innerHTML = '';
+      els.answerInput.value = '';
+      els.answerInput.disabled = true;
+      els.checkBtn.classList.add('hidden');
+      els.nextBtn.classList.add('hidden');
+
+      els.visualMount.innerHTML =
+        '<div class="center" style="padding:30px">' +
+          '<svg viewBox="0 0 300 300" width="100%" height="100%">' +
+            '<circle cx="150" cy="150" r="120" fill="var(--panel-3)" stroke="var(--accent)" stroke-width="8"></circle>' +
+            '<text x="150" y="130" text-anchor="middle" fill="var(--accent)" font-size="52" font-weight="700">' + accuracy + '%</text>' +
+            '<text x="150" y="175" text-anchor="middle" fill="var(--text)" font-size="24">Accuracy</text>' +
+          '</svg>' +
+        '</div>';
+
+      els.legendMount.innerHTML = '';
+      els.diagramCaption.textContent = 'Nice work.';
+      updateStatCards();
+    }
+
+    function checkCurrentAnswer(){
+      const question = app.questions[app.qIndex];
+      if(!question) return;
+
+      const step = question.steps[app.stepIndex];
+      const raw = normalizeAnswer(els.answerInput.value);
+
+      if(!raw){
+        els.feedback.textContent = 'Please enter an answer.';
+        els.feedback.className = 'feedback bad';
+        return;
+      }
+
+      app.totalChecked++;
+      app.currentAttempts++;
+
+      const correct = step.check(raw);
+
+      if(correct){
+        clearInterval(app.timerId);
+        app.correctCount++;
+        app.score++;
+        app.streak++;
+
+        els.feedback.textContent = 'Correct!';
+        els.feedback.className = 'feedback good';
+        els.hint.textContent = step.explanation || '';
+        showNextButton();
+        playBeep('ok');
+      }else{
+        app.streak = 0;
+        els.feedback.textContent = 'Try again.';
+        els.feedback.className = 'feedback bad';
+
+        if(app.currentAttempts === 2){
+          els.hint.textContent = step.hint || '';
+        }
+
+        if(app.currentAttempts >= 3){
+          clearInterval(app.timerId);
+          els.feedback.textContent = 'The answer was ' + step.answerDisplay + '.';
+          els.hint.textContent = step.explanation || step.hint || '';
+          showNextButton();
+        }
+
+        playBeep('bad');
+      }
+
+      updateStatCards();
+    }
+
+    function moveNext(){
+      const question = app.questions[app.qIndex];
+      if(!question) return;
+
+      if(app.stepIndex < question.steps.length - 1){
+        app.stepIndex++;
+        renderQuestion();
+        return;
+      }
+
+      if(app.stepIndex === question.steps.length - 1){
+        showScenarioSummary(question);
+        return;
+      }
+
+      app.qIndex++;
+      app.stepIndex = 0;
+      renderQuestion();
+    }
+
+    function makeSectorsFromPercents(labels, percents, options = {}){
+      return labels.map((label, index) => ({
+        label: label,
+        percent: percents[index],
+        angle: round1(percents[index] * 3.6),
+        color: STRONG_COLORS[index],
+        showPercent: !!options.showPercent,
+        showAngle: !!options.showAngle,
+        showAngleInDiagram: !!options.showAngleInDiagram,
+        labelInside: options.labelInside ? label : ''
+      }));
+    }
+
+    function looksObvious(percents){
+      const sorted = [...percents].sort((a,b) => a-b).join(',');
+      const obvious = [
+        '10,90',
+        '20,80',
+        '25,75',
+        '25,25,50',
+        '25,25,25,25',
+        '20,30,50',
+        '10,20,20,50',
+        '20,20,20,40',
+        '10,20,30,40',
+        '5,20,25,50'
+      ];
+      return obvious.includes(sorted);
+    }
+
+    function useTicksForPercents(percents){
+      return !looksObvious(percents);
+    }
+
+    function cleanPeoplePrompt(label){
+      return 'How many people chose ' + label + '?';
+    }
+
+    function categoryPercentPrompt(label){
+      return 'What percent are in ' + label + '?';
+    }
+
+    function genR1(){
+      const set = pick(REGULAR_READ_BANK);
+      const sectors = makeSectorsFromPercents(set.labels, set.perc, { labelInside:false });
+      const askOrder = shuffle([...sectors.keys()]).slice(0, Math.min(2, sectors.length));
+
+      return {
+        kind:'pie',
+        calculatorAllowed:false,
+        percentTickStep: useTicksForPercents(set.perc) ? 10 : 0,
+        scenario:'A survey result is shown in the circle diagram. Read the diagram carefully.',
+        sectors: sectors,
+        caption: useTicksForPercents(set.perc) ? 'Use the 10% tick marks only if they help.' : '',
+        steps: askOrder.map(index => ({
+          prompt: categoryPercentPrompt(sectors[index].label),
+          answerDisplay: toPercentText(sectors[index].percent),
+          check: numberCheck(sectors[index].percent),
+          inputPlaceholder: '',
+          hint: 'A full circle is 100%.',
+          explanation: ''
+        }))
+      };
+    }
+
+    function genR2(){
+      const set = pick(REGULAR_PERCENT_TO_QTY_BANK);
+      const sectors = makeSectorsFromPercents(set.labels, set.perc, { labelInside:false });
+      const total = pick(set.totals);
+      const askIndex = randInt(0, sectors.length - 1);
+      const quantity = total * sectors[askIndex].percent / 100;
+
+      return {
+        kind:'pie',
+        calculatorAllowed:false,
+        percentTickStep: useTicksForPercents(set.perc) ? 10 : 0,
+        scenario:'The circle diagram shows a survey. A total of ' + total + ' people responded.',
+        sectors: sectors,
+        caption:'First read the percent from the diagram, then use the total.',
+        steps:[
+          {
+            prompt: categoryPercentPrompt(sectors[askIndex].label),
+            answerDisplay: toPercentText(sectors[askIndex].percent),
+            check: numberCheck(sectors[askIndex].percent),
+            inputPlaceholder: '',
+            hint: 'Read the sector as a percent of the full circle.',
+            explanation: ''
+          },
+          {
+            prompt: cleanPeoplePrompt(sectors[askIndex].label),
+            answerDisplay: formatNumber(quantity),
+            check: numberCheck(quantity),
+            inputPlaceholder: '',
+            hint: 'Percent as decimal x total',
+            explanation: ''
+          }
+        ]
+      };
+    }
+
+    function genR3(){
+      const variant = pick(['equal_split','missing_part']);
+
+      if(variant === 'equal_split'){
+        const labels = ['Talk on phone','Eat','Send SMS','Use GPS'];
+        const perc = [50,25,12.5,12.5];
+        const sectors = makeSectorsFromPercents(labels, perc, { labelInside:false });
+
+        return {
+          kind:'pie',
+          calculatorAllowed:false,
+          percentTickStep: 0,
+          scenario:'The circle diagram shows what people do while driving. The share that sends SMS is equal to the share that uses GPS.',
+          sectors: sectors,
+          caption:'Use the known parts and the equal split to find the missing values.',
+          steps:[
+            {
+              prompt:'What percent of the circle is left after Talk on phone and Eat?',
+              answerDisplay:'25%',
+              check:numberCheck(25),
+              inputPlaceholder:'',
+              hint:'100 - 50 - 25',
+              explanation:''
+            },
+            {
+              prompt:'What percent send SMS?',
+              answerDisplay:'12.5%',
+              check:numberCheck(12.5),
+              inputPlaceholder:'',
+              hint:'The remaining 25% is split equally into two sectors.',
+              explanation:''
+            }
+          ]
+        };
+      }
+
+      const labels = ['Eat school lunch','Do not eat school lunch'];
+      const perc = [90,10];
+      const sectors = makeSectorsFromPercents(labels, perc, { labelInside:false });
+
+      return {
+        kind:'pie',
+        calculatorAllowed:false,
+        percentTickStep: 10,
+        scenario:'The circle diagram shows the share of students who eat school lunch.',
+        sectors: sectors,
+        caption:'Use the 10% tick marks to find the missing part of the full circle.',
+        steps:[
+          {
+            prompt:'What percent do not eat school lunch?',
+            answerDisplay:'10%',
+            check:numberCheck(10),
+            inputPlaceholder:'',
+            hint:'A full circle is 100%.',
+            explanation:''
+          },
+          {
+            prompt:'What percent do eat school lunch?',
+            answerDisplay:'90%',
+            check:numberCheck(90),
+            inputPlaceholder:'',
+            hint:'Subtract the missing part from 100.',
+            explanation:''
+          }
+        ]
+      };
+    }
+
+    function genR4(){
+      const options = pick([
+        { labels:['Do not eat school lunch','Eat school lunch'], perc:[10,90], ask:[0,1] },
+        { labels:['Blue','Red','Green'], perc:[20,30,50], ask:[0,2] },
+        { labels:['Walk','Bus','Bike'], perc:[25,25,50], ask:[0,2] }
+      ]);
+
+      const sectors = makeSectorsFromPercents(options.labels, options.perc, {
+        labelInside:false,
+        showPercent:true
+      });
+
+      return {
+        kind:'pie',
+        calculatorAllowed:true,
+        percentTickStep: 0,
+        scenario:'Calculator allowed. Use the percent share of the circle to find the central angle.',
+        sectors: sectors,
+        caption:'Use the percent shown in the key. Multiply the percent as a decimal by 360.',
+        steps: options.ask.map(index => ({
+          prompt:'What is the central angle of ' + options.labels[index] + '?',
+          answerDisplay: toDegreeText(sectors[index].angle),
+          check: numberCheck(sectors[index].angle),
+          inputPlaceholder: '',
+          hint: 'Percent as decimal x 360',
+          explanation: ''
+        }))
+      };
+    }
+
+    function genA1(){
+      const options = pick([
+        { labels:['Blue','Green','Yellow'], angles:[72,108,180], ask:[0,1] },
+        { labels:['Math','English','Science','Art'], angles:[36,72,108,144], ask:[2,3] },
+        { labels:['Reading','Gaming','Sports'], angles:[180,108,72], ask:[1,2] }
+      ]);
+
+      const percents = options.angles.map(a => round1(a / 3.6));
+      const sectors = options.labels.map((label, index) => ({
+        label: label,
+        percent: percents[index],
+        angle: options.angles[index],
+        color: STRONG_COLORS[index],
+        showPercent: false,
+        showAngle: false,
+        showAngleInDiagram: true,
+        labelInside: ''
+      }));
+
+      return {
+        kind:'pie',
+        calculatorAllowed:true,
+        percentTickStep: 0,
+        scenario:'Calculator allowed. The sector angles are shown in the circle diagram.',
+        sectors: sectors,
+        caption:'Convert the angle to a percent of the full circle.',
+        steps: options.ask.map(index => ({
+          prompt:'What percent is ' + sectors[index].label + '?',
+          answerDisplay: toPercentText(sectors[index].percent),
+          check: numberCheck(sectors[index].percent),
+          inputPlaceholder: '',
+          hint: 'Angle ÷ 360 x 100',
+          explanation: ''
+        }))
+      };
+    }
+
+    function genA2(){
+      const set = pick([
+        { labels:['North','South','East'], perc:[25,25,50] },
+        { labels:['Red','Blue','Green'], perc:[20,30,50] },
+        { labels:['Football','Basketball','Tennis','Swimming'], perc:[40,30,20,10] }
+      ]);
+
+      const hideIndex = randInt(0, set.labels.length - 1);
+      const sectors = makeSectorsFromPercents(set.labels, set.perc, { showPercent:true, labelInside:false });
+      sectors[hideIndex].showPercent = false;
+      const angle = Math.round(sectors[hideIndex].angle);
+
+      return {
+        kind:'pie',
+        calculatorAllowed:true,
+        percentTickStep: 0,
+        scenario:'Calculator allowed. The circle diagram shows a distribution. One percent in the key is missing.',
+        sectors: sectors,
+        caption:'Find the missing percent, then find its angle.',
+        steps:[
+          {
+            prompt:'What percent is ' + sectors[hideIndex].label + '?',
+            answerDisplay: toPercentText(sectors[hideIndex].percent),
+            check: numberCheck(sectors[hideIndex].percent),
+            inputPlaceholder: '',
+            hint: 'Known percents add to less than 100. Subtract from 100.',
+            explanation: ''
+          },
+          {
+            prompt:'What is the central angle of ' + sectors[hideIndex].label + '? Round to whole degrees.',
+            answerDisplay: angle + ' degrees',
+            check: wholeCheck(angle),
+            inputPlaceholder: '',
+            hint: 'Percent as decimal x 360',
+            explanation: ''
+          }
+        ]
+      };
+    }
+
+    function genA3(){
+      const set = pick([
+        { labels:['Johanna','Elin','Linda'], perc:[20,50,30], knownIndex:0, knownVotes:30, askIndex:1 },
+        { labels:['Anna','Ben','Carl'], perc:[25,50,25], knownIndex:0, knownVotes:20, askIndex:1 },
+        { labels:['Team A','Team B','Team C'], perc:[20,30,50], knownIndex:0, knownVotes:18, askIndex:2 }
+      ]);
+
+      const sectors = makeSectorsFromPercents(set.labels, set.perc, { labelInside:false });
+      const total = set.knownVotes / (set.perc[set.knownIndex] / 100);
+      const askVotes = total * (set.perc[set.askIndex] / 100);
+
+      return {
+        kind:'pie',
+        calculatorAllowed:false,
+        percentTickStep: useTicksForPercents(set.perc) ? 10 : 0,
+        scenario:'The circle diagram shows the result of a vote. ' + set.labels[set.knownIndex] + ' received ' + set.knownVotes + ' votes.',
+        sectors: sectors,
+        caption:'Read the sector share, then find the total and the missing votes.',
+        steps:[
+          {
+            prompt:'What percent of the votes did ' + set.labels[set.knownIndex] + ' receive?',
+            answerDisplay: toPercentText(set.perc[set.knownIndex]),
+            check: numberCheck(set.perc[set.knownIndex]),
+            inputPlaceholder: '',
+            hint: 'Read the sector share from the diagram.',
+            explanation: ''
+          },
+          {
+            prompt:'How many votes were cast in total?',
+            answerDisplay: formatNumber(total),
+            check: wholeCheck(total),
+            inputPlaceholder: '',
+            hint: 'Known part ÷ percent as decimal',
+            explanation: ''
+          },
+          {
+            prompt:'How many votes did ' + set.labels[set.askIndex] + ' receive?',
+            answerDisplay: formatNumber(askVotes),
+            check: wholeCheck(askVotes),
+            inputPlaceholder: '',
+            hint: 'Use that category percent of the total.',
+            explanation: ''
+          }
+        ]
+      };
+    }
+
+    function genA4(){
+      const variant = pick(['fraction','percent']);
+
+      if(variant === 'fraction'){
+        const set = pick([
+          { labels:['Yes, always','Yes, in small planes','Sometimes','No, not at all'], counts:[400,100,500,2000], ask:0 },
+          { labels:['Red','Blue','Green','Yellow'], counts:[150,150,100,200], ask:2 },
+          { labels:['Bus','Train','Bike','Walk'], counts:[240,120,360,240], ask:1 }
+        ]);
+
+        const total = set.counts.reduce((sum, value) => sum + value, 0);
+        const askCount = set.counts[set.ask];
+        const simp = simplifyFraction(askCount, total);
+
+        return {
+          kind:'table',
+          calculatorAllowed:false,
+          tableHeadLeft:'Category',
+          tableHeadRight:'Count',
+          rows:set.labels.map((label, index) => ({ label, count:set.counts[index] })),
+          scenario:'A survey result is shown in the table.',
+          caption:'Write the fraction in simplest form.',
+          steps:[
+            {
+              prompt:'How many responses are there in total?',
+              answerDisplay: formatNumber(total),
+              check: wholeCheck(total),
+              inputPlaceholder: '',
+              hint: 'Add all the counts in the table.',
+              explanation: ''
+            },
+            {
+              prompt:'What fraction of the responses chose ' + set.labels[set.ask] + '? Give your answer in simplest form.',
+              answerDisplay: simp[0] + '/' + simp[1],
+              check: fractionCheck(simp[0], simp[1]),
+              inputPlaceholder: '',
+              inputMode: 'text',
+              hint: 'Category count over total, then simplify.',
+              explanation: ''
+            }
+          ]
+        };
+      }
+
+      const set = pick([
+        { labels:['Apple','Orange','Banana','Pear'], counts:[150,180,120,150], ask:1 },
+        { labels:['Beginner','Intermediate','Advanced'], counts:[125,375,500], ask:0 },
+        { labels:['Spring','Summer','Autumn','Winter'], counts:[300,200,100,400], ask:2 }
+      ]);
+
+      const total = set.counts.reduce((sum, value) => sum + value, 0);
+      const askCount = set.counts[set.ask];
+      const percent = round1((askCount / total) * 100);
+
+      return {
+        kind:'table',
+        calculatorAllowed:false,
+        tableHeadLeft:'Category',
+        tableHeadRight:'Count',
+        rows:set.labels.map((label, index) => ({ label, count:set.counts[index] })),
+        scenario:'Use the table to find the percentage for one category.',
+        caption:'Answer with the number only. Do not type the percent sign.',
+        steps:[
+          {
+            prompt:'How many responses are there in total?',
+            answerDisplay: formatNumber(total),
+            check: wholeCheck(total),
+            inputPlaceholder: '',
+            hint: 'Add the numbers in the table.',
+            explanation: ''
+          },
+          {
+            prompt:'What percent chose ' + set.labels[set.ask] + '?',
+            answerDisplay: toPercentText(percent),
+            check: numberCheck(percent),
+            inputPlaceholder: '',
+            hint: 'Divide the category count by the total, then multiply by 100.',
+            explanation: ''
+          }
+        ]
+      };
+    }
+
+    function genA5(){
+      const set = pick([
+        { labels:['Yes, always','Yes, in small planes','Sometimes','No, not at all'], counts:[400,100,500,2000], ask:2 },
+        { labels:['Red','Blue','Green','Yellow'], counts:[150,150,100,200], ask:3 },
+        { labels:['Bus','Train','Bike','Walk'], counts:[240,120,360,240], ask:1 }
+      ]);
+
+      const total = set.counts.reduce((sum, value) => sum + value, 0);
+      const askCount = set.counts[set.ask];
+      const percent = round1((askCount / total) * 100);
+      const angle = round1((askCount / total) * 360);
+
+      return {
+        kind:'table',
+        calculatorAllowed:true,
+        tableHeadLeft:'Category',
+        tableHeadRight:'Count',
+        rows:set.labels.map((label, index) => ({ label, count:set.counts[index] })),
+        scenario:'Calculator allowed. Use the table to find the central angle for a circle diagram sector.',
+        caption:'Find the fraction or percent from the table, then multiply by 360.',
+        steps:[
+          {
+            prompt:'How many responses are there in total?',
+            answerDisplay: formatNumber(total),
+            check: wholeCheck(total),
+            inputPlaceholder: '',
+            hint: 'Add the table values first.',
+            explanation: ''
+          },
+          {
+            prompt:'What percent chose ' + set.labels[set.ask] + '?',
+            answerDisplay: toPercentText(percent),
+            check: numberCheck(percent),
+            inputPlaceholder: '',
+            hint: 'Divide the category count by the total, then multiply by 100.',
+            explanation: ''
+          },
+          {
+            prompt:'What is the central angle for ' + set.labels[set.ask] + '?',
+            answerDisplay: toDegreeText(angle),
+            check: numberCheck(angle),
+            inputPlaceholder: '',
+            hint: 'Percent as decimal x 360',
+            explanation: ''
+          }
+        ]
+      };
+    }
+
+    function generateRegularQuestions(count = 10){
+      const families = ['R1','R1','R2','R2','R3','R3','R4','R4','R2','R3'];
+      const out = [];
+      for(let i = 0; i < count; i++){
+        const code = pick(families);
+        if(code === 'R1') out.push(genR1());
+        else if(code === 'R2') out.push(genR2());
+        else if(code === 'R3') out.push(genR3());
+        else out.push(genR4());
+      }
+      return out;
+    }
+
+    function generateAdvancedQuestions(count = 10){
+      const families = ['A1','A1','A2','A2','A3','A3','A4','A4','A5','A5'];
+      const out = [];
+      for(let i = 0; i < count; i++){
+        const code = pick(families);
+        if(code === 'A1') out.push(genA1());
+        else if(code === 'A2') out.push(genA2());
+        else if(code === 'A3') out.push(genA3());
+        else if(code === 'A4') out.push(genA4());
+        else out.push(genA5());
+      }
+      return out;
+    }
+
+    function generateGameSet(){
+      resetGameState();
+      app.questions = app.mode === 'regular'
+        ? generateRegularQuestions(10)
+        : generateAdvancedQuestions(10);
+      renderQuestion();
+    }
+
+    function worksheetPieHTML(question){
+      const cx = 160;
+      const cy = 160;
+      const r = 110;
+      let currentAngle = 0;
+      const paths = [];
+      const textParts = [];
+
+      question.sectors.forEach(sector => {
+        const endAngle = currentAngle + sector.angle;
+        paths.push(
+          '<path d="' + sectorPath(cx, cy, r, currentAngle, endAngle) + '" fill="' + sector.color + '" stroke="var(--line)" stroke-width="2.5"></path>'
+        );
+
+        const mid = currentAngle + sector.angle / 2;
+        if(sector.showAngleInDiagram){
+          const anglePos = polar(cx, cy, r * 0.34, mid);
+          textParts.push(
+            '<text x="' + anglePos.x + '" y="' + anglePos.y + '" fill="var(--text)" font-size="14" text-anchor="middle" dominant-baseline="middle">' + formatNumber(sector.angle) + '°</text>'
+          );
+        }
+
+        currentAngle = endAngle;
+      });
+
+      const legend = question.sectors.map(sector => {
+        return '<div class="legend-item"><div class="swatch" style="background:' + sector.color + '"></div><div>' + describeLegendItem(sector) + '</div></div>';
+      }).join('');
+
+      return (
+        '<div style="display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:16px;align-items:center">' +
+          '<svg viewBox="0 0 320 320" width="100%" height="220" aria-label="Circle diagram">' +
+            paths.join('') +
+            buildPercentTickMarks(cx, cy, r, question.percentTickStep || 0) +
+            textParts.join('') +
+            '<circle cx="160" cy="160" r="110" fill="none" stroke="var(--line)" stroke-width="3"></circle>' +
+          '</svg>' +
+          '<div class="legend">' + legend + '</div>' +
+        '</div>'
+      );
+    }
+
+    function worksheetTableHTML(question){
+      const rows = question.rows.map(row => {
+        return '<tr><td>' + row.label + '</td><td>' + row.count + '</td></tr>';
+      }).join('');
+
+      return (
+        '<table>' +
+          '<thead><tr><th>' + (question.tableHeadLeft || 'Category') + '</th><th>' + (question.tableHeadRight || 'Count') + '</th></tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>'
+      );
+    }
+
+    function renderWorksheet(questions){
+      els.worksheetMount.innerHTML = '';
+
+      const header = document.createElement('div');
+      header.className = 'worksheet-item';
+      header.innerHTML =
+        '<h3>' + (app.mode === 'regular' ? 'Regular' : 'Advanced') + ' Circle Diagrams Worksheet</h3>' +
+        '<div class="small-note">Answer all parts. Calculator allowed only where shown in the question.</div>';
+      els.worksheetMount.appendChild(header);
+
+      questions.forEach((question, index) => {
+        const item = document.createElement('div');
+        item.className = 'worksheet-item';
+
+        const meta = question.calculatorAllowed ? 'Calculator allowed' : 'No calculator needed';
+
+        item.innerHTML =
+          '<h3>Question ' + (index + 1) + '</h3>' +
+          '<div class="small-note">' + meta + '</div>' +
+          '<div class="qpart" style="margin-top:10px">' + question.scenario + '</div>';
+
+        const visual = document.createElement('div');
+        visual.style.margin = '14px 0';
+
+        if(question.kind === 'pie'){
+          visual.innerHTML = worksheetPieHTML(question);
+        }else{
+          visual.innerHTML = worksheetTableHTML(question);
+        }
+
+        item.appendChild(visual);
+
+        question.steps.forEach((step, stepIndex) => {
+          const div = document.createElement('div');
+          div.className = 'qpart';
+          div.innerHTML = '<strong>' + String.fromCharCode(97 + stepIndex) + ')</strong> ' + step.prompt;
+          item.appendChild(div);
+        });
+
+        els.worksheetMount.appendChild(item);
+      });
+
+      const answerKey = document.createElement('div');
+      answerKey.className = 'answer-key';
+      answerKey.innerHTML = '<h3>Answer Key</h3>';
+
+      questions.forEach((question, index) => {
+        const div = document.createElement('div');
+        div.className = 'ak';
+
+        const answers = question.steps.map((step, stepIndex) => {
+          return String.fromCharCode(97 + stepIndex) + ') ' + step.answerDisplay;
+        }).join(' | ');
+
+        div.innerHTML = '<strong>' + (index + 1) + '.</strong> ' + answers;
+        answerKey.appendChild(div);
+      });
+
+      els.worksheetMount.appendChild(answerKey);
+    }
+
+    function generateWorksheetSet(){
+      const questions = app.mode === 'regular'
+        ? generateRegularQuestions(app.worksheetSize)
+        : generateAdvancedQuestions(app.worksheetSize);
+      renderWorksheet(questions);
+    }
+
+    function switchToGameView(){
+      app.playType = 'game';
+      els.gameView.classList.remove('hidden');
+      els.worksheetView.classList.add('hidden');
+      setActiveButton([els.gameModeBtn, els.worksheetModeBtn], els.gameModeBtn);
+      generateGameSet();
+    }
+
+    function switchToWorksheetView(){
+      app.playType = 'worksheet';
+      els.gameView.classList.add('hidden');
+      els.worksheetView.classList.remove('hidden');
+      setActiveButton([els.gameModeBtn, els.worksheetModeBtn], els.worksheetModeBtn);
+      generateWorksheetSet();
+    }
+
+    function bindEvents(){
+      els.modeRegularBtn.addEventListener('click', () => {
+        app.mode = 'regular';
+        setActiveButton([els.modeRegularBtn, els.modeAdvancedBtn], els.modeRegularBtn);
+        if(app.playType === 'game') generateGameSet();
+        else generateWorksheetSet();
+      });
+
+      els.modeAdvancedBtn.addEventListener('click', () => {
+        app.mode = 'advanced';
+        setActiveButton([els.modeRegularBtn, els.modeAdvancedBtn], els.modeAdvancedBtn);
+        if(app.playType === 'game') generateGameSet();
+        else generateWorksheetSet();
+      });
+
+      els.gameModeBtn.addEventListener('click', switchToGameView);
+      els.worksheetModeBtn.addEventListener('click', switchToWorksheetView);
+
+      els.worksheetSizeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          app.worksheetSize = Number(btn.dataset.ws);
+          els.worksheetSizeBtns.forEach(b => {
+            b.classList.remove('active');
+            if(!b.classList.contains('secondary')) b.classList.add('secondary');
+          });
+          btn.classList.add('active');
+          btn.classList.remove('secondary');
+
+          if(app.playType === 'worksheet'){
+            generateWorksheetSet();
+          }
+        });
+      });
+
+      els.timerBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          app.timerSeconds = Number(btn.dataset.timer);
+          els.timerBtns.forEach(b => {
+            b.classList.remove('active');
+            if(!b.classList.contains('secondary')) b.classList.add('secondary');
+          });
+          btn.classList.add('active');
+          btn.classList.remove('secondary');
+
+          if(app.playType === 'game') startTimer();
+          else updateStatCards();
+        });
+      });
+
+      els.soundBtn.addEventListener('click', () => {
+        app.sound = !app.sound;
+        els.soundBtn.textContent = 'Sound: ' + (app.sound ? 'On' : 'Off');
+      });
+
+      els.contrastBtn.addEventListener('click', () => {
+        app.highContrast = !app.highContrast;
+        document.body.classList.toggle('high-contrast', app.highContrast);
+        els.contrastBtn.textContent = 'High Contrast: ' + (app.highContrast ? 'On' : 'Off');
+      });
+
+      els.themeBtn.addEventListener('click', () => {
+        app.lightTheme = !app.lightTheme;
+        document.body.classList.toggle('light', app.lightTheme);
+        els.themeBtn.textContent = 'Theme: ' + (app.lightTheme ? 'Light' : 'Dark');
+      });
+
+      els.newSetBtn.addEventListener('click', () => {
+        if(app.playType === 'game') generateGameSet();
+        else generateWorksheetSet();
+      });
+
+      els.checkBtn.addEventListener('click', checkCurrentAnswer);
+      els.nextBtn.addEventListener('click', moveNext);
+
+      els.answerInput.addEventListener('keydown', event => {
+        if(event.key === 'Enter'){
+          if(!els.nextBtn.classList.contains('hidden')) moveNext();
+          else checkCurrentAnswer();
+        }
+      });
+
+      els.generateWorksheetBtn.addEventListener('click', generateWorksheetSet);
+      els.printWorksheetBtn.addEventListener('click', () => window.print());
+    }
+
+    bindEvents();
+    generateGameSet();
+  </script>
+</body>
+</html>
