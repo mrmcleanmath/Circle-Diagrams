@@ -64,6 +64,7 @@ th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left}th{b
 @media print{
   body{background:#fff;color:#000}.side,.worksheet-toolbar{display:none!important}
   .main,.panel,.card,.worksheet-item,.answer-key{box-shadow:none!important;border:1px solid #999!important;background:#fff!important;color:#000!important}
+  .worksheet-item{break-inside:avoid}
 }
 </style>
 </head>
@@ -179,7 +180,9 @@ const els={
   worksheetMount:$('worksheetMount'),generateWorksheetBtn:$('generateWorksheetBtn'),printWorksheetBtn:$('printWorksheetBtn'),
   worksheetSizeBtns:[...document.querySelectorAll('[data-ws]')],timerBtns:[...document.querySelectorAll('[data-timer]')]
 };
+
 const COLORS=['#2F80ED','#EB5757','#27AE60','#F2C94C','#9B51E0','#F2994A','#00B8D9','#D81B60'];
+
 function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min}
 function pick(arr){return arr[randInt(0,arr.length-1)]}
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -187,7 +190,8 @@ function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=b;b=a%b;a=t}retur
 function simp(n,d){const g=gcd(n,d);return[n/g,d/g]}
 function round1(n){return Math.round(n*10)/10}
 function fmt(n){return Number.isInteger(n)?String(n):String(round1(n)).replace(/\.0$/,'')}
-function pct(n){return fmt(n)+'%'} function deg(n){return fmt(n)+' degrees'}
+function pct(n){return fmt(n)+'%'}
+function deg(n){return fmt(n)+' degrees'}
 function norm(t){return t.trim().replace(/,/g,'.').replace(/degrees?/gi,'').replace(/deg/gi,'').replace(/°/g,'').replace(/%/g,'').replace(/\s+/g,'')}
 function isNum(s){return /^-?\d+(?:\.\d+)?$/.test(s)}
 function numberCheck(expected){return raw=>isNum(raw)&&Math.abs(Number(raw)-expected)<.000001}
@@ -195,31 +199,52 @@ function wholeCheck(expected){return raw=>isNum(raw)&&Math.abs(Number(raw)-expec
 function fractionCheck(n,d){return raw=>{if(!/^\d+\/\d+$/.test(raw))return false;const [a,b]=raw.split('/').map(Number);if(b===0)return false;const s=simp(a,b);return s[0]===n&&s[1]===d}}
 function playBeep(type='ok'){if(!app.sound)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const ctx=new C(),osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.value=type==='ok'?720:260;gain.gain.value=.03;osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.12)}
 function setActive(buttons,active){buttons.forEach(b=>{b.classList.remove('active');if(!b.classList.contains('secondary')&&b!==active)b.classList.add('secondary')});active.classList.add('active');active.classList.remove('secondary')}
+
+function isMentalPercent(p){return [1,5,10,12.5,20,25,30,40,50,60,75,80,90].includes(p)}
+function calcNeededForPercentAmount(total,percent){return total>1000 || !isMentalPercent(percent) || !Number.isInteger(total*percent/100)}
+function calcNeededForAngleAmount(total,angle){const amount=total*angle/360;return total>1000 || !Number.isInteger(amount) || ![36,45,72,90,108,120,144,180,216,270].includes(angle)}
+function makeAmountPrompt(label, context, rounded=false){
+  let text='How many are in '+label+'?';
+  if(context==='people') text='How many people answered '+label+'?';
+  if(context==='students') text='How many students chose '+label+'?';
+  if(context==='votes') text='How many votes did '+label+' receive?';
+  if(context==='items') text='How many are '+label+'?';
+  if(rounded) text+=' Round to the nearest whole number.';
+  return text;
+}
+function amountInfo(total,share,shareType,context){
+  const exact=shareType==='percent'?total*share/100:total*share/360;
+  const isCountContext=['people','students','votes','items'].includes(context);
+  const roundedNeeded=isCountContext && !Number.isInteger(exact);
+  const answer=roundedNeeded?Math.round(exact):round1(exact);
+  return {exact, answer, roundedNeeded};
+}
+
 function updateStats(){const q=app.questions[app.qIndex],total=app.questions.length,steps=q?q.steps.length:0;els.statQuestion.textContent=(total?Math.min(app.qIndex+1,total):0)+' / '+total;els.statStep.textContent=(q?Math.min(app.stepIndex+1,steps):0)+' / '+steps;els.statScore.textContent=app.score;els.statAccuracy.textContent=(app.totalChecked?Math.round(app.correctCount/app.totalChecked*100):0)+'%';els.statStreak.textContent=app.streak;els.statTimer.textContent=app.timerSeconds?(app.remainingTime+'s'):'Off'}
 function showCheck(){els.checkBtn.classList.remove('hidden');els.nextBtn.classList.add('hidden')}
 function showNext(){els.checkBtn.classList.add('hidden');els.nextBtn.classList.remove('hidden')}
 function resetGame(){clearInterval(app.timerId);Object.assign(app,{qIndex:0,stepIndex:0,score:0,correctCount:0,totalChecked:0,streak:0,remainingTime:app.timerSeconds,currentAttempts:0});els.answerInput.disabled=false;showCheck();updateStats()}
 function startTimer(){clearInterval(app.timerId);app.remainingTime=app.timerSeconds;updateStats();if(!app.timerSeconds)return;app.timerId=setInterval(()=>{app.remainingTime--;updateStats();if(app.remainingTime<=0){clearInterval(app.timerId);timeout()}},1000)}
 function timeout(){const q=app.questions[app.qIndex];if(!q)return;const s=q.steps[app.stepIndex];app.totalChecked++;app.streak=0;els.feedback.textContent='Time is up. The answer was '+s.answerDisplay+'.';els.feedback.className='feedback bad';els.hint.textContent=s.explanation||s.hint||'';showNext();playBeep('bad');updateStats()}
+
 function polar(cx,cy,r,a){const rad=(a-90)*Math.PI/180;return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)}}
 function sectorPath(cx,cy,r,start,end){const s=polar(cx,cy,r,end),e=polar(cx,cy,r,start),large=end-start<=180?'0':'1';return['M',cx,cy,'L',s.x,s.y,'A',r,r,0,large,0,e.x,e.y,'Z'].join(' ')}
 function tickMarks(cx,cy,r,stepPercent){if(!stepPercent)return'';let m='',step=stepPercent*3.6;for(let a=0;a<360;a+=step){const major=Math.round(a)%90===0,o=polar(cx,cy,r+(major?10:6),a),i=polar(cx,cy,r-(major?12:6),a);m+='<line x1="'+i.x+'" y1="'+i.y+'" x2="'+o.x+'" y2="'+o.y+'" stroke="var(--text)" stroke-width="'+(major?2.5:1.6)+'"></line>'}return m}
 function legendText(s){if(s.showPercent)return s.label+': '+pct(s.percent);if(s.showAngle)return s.label+': '+deg(s.angle);return s.label}
 function renderLegend(q){els.legendMount.innerHTML='';if(q.kind==='table')return;q.sectors.forEach(s=>{const row=document.createElement('div');row.className='legend-item';row.innerHTML='<div class="swatch" style="background:'+s.color+'"></div><div>'+legendText(s)+'</div>';els.legendMount.appendChild(row)})}
-function renderPie(q){const cx=200,cy=200,r=150;let a=0,parts='',over='';q.sectors.forEach(s=>{const end=a+s.angle;parts+='<path d="'+sectorPath(cx,cy,r,a,end)+'" fill="'+s.color+'" stroke="var(--line)" stroke-width="2.5"></path>';const mid=a+s.angle/2;if(s.labelInside){const p=polar(cx,cy,r*.58,mid);over+='<text x="'+p.x+'" y="'+p.y+'" fill="var(--text)" font-size="15" text-anchor="middle" dominant-baseline="middle" font-weight="700">'+s.labelInside+'</text>'}if(s.showAngleInDiagram){const p=polar(cx,cy,r*.35,mid);over+='<text x="'+p.x+'" y="'+p.y+'" fill="var(--text)" font-size="16" text-anchor="middle" dominant-baseline="middle" font-weight="700">'+fmt(s.angle)+'°</text>'}a=end});els.visualMount.innerHTML='<svg viewBox="0 0 400 400" width="100%" height="100%" aria-label="Circle diagram"><rect width="400" height="400" fill="transparent"></rect>'+parts+tickMarks(cx,cy,r,q.percentTickStep||0)+over+'<circle cx="200" cy="200" r="150" fill="none" stroke="var(--line)" stroke-width="3"></circle></svg>'}
+function renderPie(q){const cx=200,cy=200,r=150;let a=0,parts='',over='';q.sectors.forEach(s=>{const end=a+s.angle;parts+='<path d="'+sectorPath(cx,cy,r,a,end)+'" fill="'+s.color+'" stroke="var(--line)" stroke-width="2.5"></path>';const mid=a+s.angle/2;if(s.labelInside){const p=polar(cx,cy,r*.58,mid);over+='<text x="'+p.x+'" y="'+p.y+'" fill="var(--text)" font-size="15" text-anchor="middle" dominant-baseline="middle" font-weight="700">'+s.labelInside+'</text>'}if(s.showAngleInDiagram){const p=polar(cx,cy,r*.35,mid);over+='<text x="'+p.x+'" y="'+p.y+'" fill="var(--text)" font-size="16" text-anchor="middle" dominant-baseline="middle" font-weight="700">'+fmt(s.angle)+'°</text>'}if(s.showPercentInDiagram){const p=polar(cx,cy,r*.63,mid);over+='<text x="'+p.x+'" y="'+p.y+'" fill="var(--text)" font-size="16" text-anchor="middle" dominant-baseline="middle" font-weight="700">'+fmt(s.percent)+'%</text>'}a=end});els.visualMount.innerHTML='<svg viewBox="0 0 400 400" width="100%" height="100%" aria-label="Circle diagram"><rect width="400" height="400" fill="transparent"></rect>'+parts+tickMarks(cx,cy,r,q.percentTickStep||0)+over+'<circle cx="200" cy="200" r="150" fill="none" stroke="var(--line)" stroke-width="3"></circle></svg>'}
 function renderTable(q){els.visualMount.innerHTML='<div class="table-wrap"><table><thead><tr><th>'+(q.tableHeadLeft||'Category')+'</th><th>'+(q.tableHeadRight||'Count')+'</th></tr></thead><tbody>'+q.rows.map(r=>'<tr><td>'+r.label+'</td><td>'+r.count+'</td></tr>').join('')+'</tbody></table></div>';els.legendMount.innerHTML=''}
+
 function renderQuestion(){const q=app.questions[app.qIndex];if(!q){endScreen();return}const s=q.steps[app.stepIndex];app.currentAttempts=0;els.questionTitle.textContent='Question '+(app.qIndex+1);els.skillLabel.textContent='Skill: '+q.skillLabel;els.scenarioText.textContent=q.scenario;els.promptText.textContent=s.prompt;els.feedback.textContent='';els.feedback.className='feedback';els.hint.textContent='';els.summaryMount.innerHTML='';els.answerInput.value='';els.answerInput.disabled=false;els.answerInput.inputMode=s.inputMode||'decimal';renderLegend(q);els.diagramCaption.textContent=q.caption||'';q.kind==='pie'?renderPie(q):renderTable(q);showCheck();startTimer();updateStats();els.answerInput.focus()}
 function showSummary(q){clearInterval(app.timerId);els.summaryMount.innerHTML='<div class="summary-box"><h3>Question '+(app.qIndex+1)+' complete</h3><ul>'+q.steps.map((s,i)=>'<li>'+String.fromCharCode(65+i)+': '+s.answerDisplay+'</li>').join('')+'</ul></div>';els.feedback.textContent='Press Next to continue.';els.feedback.className='feedback good';els.hint.textContent='';showNext();app.stepIndex=q.steps.length;updateStats()}
 function endScreen(){clearInterval(app.timerId);const acc=app.totalChecked?Math.round(app.correctCount/app.totalChecked*100):0;els.questionTitle.textContent='Set complete';els.skillLabel.textContent='Skill: '+skillName(app.skillMode);els.scenarioText.innerHTML='You completed the set.<br><br><strong>Score:</strong> '+app.score+'<br><strong>Correct checks:</strong> '+app.correctCount+'<br><strong>Total checks:</strong> '+app.totalChecked+'<br><strong>Accuracy:</strong> '+acc+'%';els.promptText.textContent='Press New Set to generate another game, or switch to worksheet mode.';els.feedback.textContent='';els.hint.textContent='';els.summaryMount.innerHTML='';els.answerInput.value='';els.answerInput.disabled=true;els.checkBtn.classList.add('hidden');els.nextBtn.classList.add('hidden');els.visualMount.innerHTML='<div class="center" style="padding:30px"><svg viewBox="0 0 300 300" width="100%" height="100%"><circle cx="150" cy="150" r="120" fill="var(--panel-3)" stroke="var(--accent)" stroke-width="8"></circle><text x="150" y="130" text-anchor="middle" fill="var(--accent)" font-size="52" font-weight="700">'+acc+'%</text><text x="150" y="175" text-anchor="middle" fill="var(--text)" font-size="24">Accuracy</text></svg></div>';els.legendMount.innerHTML='';els.diagramCaption.textContent='Nice work.';updateStats()}
 function checkAnswer(){const q=app.questions[app.qIndex];if(!q)return;const s=q.steps[app.stepIndex],raw=norm(els.answerInput.value);if(!raw){els.feedback.textContent='Please enter an answer.';els.feedback.className='feedback bad';return}app.totalChecked++;app.currentAttempts++;const ok=s.check(raw);if(ok){clearInterval(app.timerId);app.correctCount++;app.score++;app.streak++;els.feedback.textContent='Correct!';els.feedback.className='feedback good';els.hint.textContent=s.explanation||'';showNext();playBeep('ok')}else{app.streak=0;els.feedback.textContent='Try again.';els.feedback.className='feedback bad';if(app.currentAttempts===2)els.hint.textContent=s.hint||'';if(app.currentAttempts>=3){clearInterval(app.timerId);els.feedback.textContent='The answer was '+s.answerDisplay+'.';els.hint.textContent=s.explanation||s.hint||'';showNext()}playBeep('bad')}updateStats()}
 function moveNext(){const q=app.questions[app.qIndex];if(!q)return;if(app.stepIndex<q.steps.length-1){app.stepIndex++;renderQuestion();return}if(app.stepIndex===q.steps.length-1){showSummary(q);return}app.qIndex++;app.stepIndex=0;renderQuestion()}
-function sectors(labels,percents,opt={}){return labels.map((label,i)=>({label,percent:percents[i],angle:round1(percents[i]*3.6),color:COLORS[i],showPercent:!!opt.showPercent,showAngle:!!opt.showAngle,showAngleInDiagram:!!opt.showAngleInDiagram,labelInside:opt.labelInside?label:''}))}
-function angleSectors(labels,angles,opt={}){return labels.map((label,i)=>({label,angle:angles[i],percent:round1(angles[i]/3.6),color:COLORS[i],showPercent:!!opt.showPercent,showAngle:!!opt.showAngle,showAngleInDiagram:!!opt.showAngleInDiagram,labelInside:opt.labelInside?label:''}))}
-function step(prompt,answer,check,hint='',explanation='',inputMode='decimal'){return{prompt,answerDisplay:answer,check,hint,explanation,inputMode}}
-function easyPercentForMental(p){return [1,5,10,12.5,20,25,30,40,50,59,60,75,80,89,90].includes(p)}
-function amountCalcNeeded(total,percent){return total>1000 || !easyPercentForMental(percent) || !Number.isInteger(total*percent/100)}
 
-/* Conversion mode */
+function sectors(labels,percents,opt={}){return labels.map((label,i)=>({label,percent:percents[i],angle:round1(percents[i]*3.6),color:COLORS[i],showPercent:!!opt.showPercent,showAngle:!!opt.showAngle,showAngleInDiagram:!!opt.showAngleInDiagram,showPercentInDiagram:!!opt.showPercentInDiagram,labelInside:opt.labelInside?label:''}))}
+function angleSectors(labels,angles,opt={}){return labels.map((label,i)=>({label,angle:angles[i],percent:round1(angles[i]/3.6),color:COLORS[i],showPercent:!!opt.showPercent,showAngle:!!opt.showAngle,showAngleInDiagram:!!opt.showAngleInDiagram,showPercentInDiagram:!!opt.showPercentInDiagram,labelInside:opt.labelInside?label:''}))}
+function step(prompt,answer,check,hint='',explanation='',inputMode='decimal'){return{prompt,answerDisplay:answer,check,hint,explanation,inputMode}}
+
 function genPercentToDegrees(){
   const set=pick([
     {labels:['Gotaland','Svealand','Norrland'],perc:[21,20,59],ask:[0,1,2]},
@@ -229,15 +254,11 @@ function genPercentToDegrees(){
     {labels:['Football','Basketball','Tennis','Swimming'],perc:[40,30,20,10],ask:[0,2]},
     {labels:['Pizza','Tacos','Pasta','Sushi'],perc:[35,30,20,15],ask:[0,3]},
     {labels:['Video games','Sports','Reading','Music'],perc:[45,25,20,10],ask:[0,1,2]},
-    {labels:['Blue','Red','Green','Yellow'],perc:[25,25,30,20],ask:[2,3]},
-    {labels:['Train','Bus','Car','Bike'],perc:[15,35,40,10],ask:[0,1,2]},
-    {labels:['Math','English','Science','Art'],perc:[30,20,25,25],ask:[0,2]},
-    {labels:['Morning','Afternoon','Evening'],perc:[20,45,35],ask:[1,2]},
     {labels:['Dogs','Cats','Fish','Other'],perc:[32.5,27.5,25,15],ask:[0,1]}
   ]);
   const ss=sectors(set.labels,set.perc,{showPercent:true});
   const asks=shuffle(set.ask).slice(0,Math.min(2,set.ask.length));
-  return{kind:'pie',skillLabel:'Convert percent to degrees',calculatorAllowed:true,percentTickStep:0,
+  return{kind:'pie',signature:'p2d-'+set.labels.join('-'),skillLabel:'Convert percent to degrees',calculatorAllowed:true,percentTickStep:0,
     scenario:'Calculator allowed. The circle diagram shows percentages. Convert the given percent to a central angle.',
     sectors:ss,caption:'Use percent as decimal times 360.',
     steps:asks.map(i=>step('What is the central angle for '+ss[i].label+'?',deg(round1(ss[i].angle)),numberCheck(round1(ss[i].angle)),'Percent as decimal x 360.',''))
@@ -249,76 +270,76 @@ function genDegreesToPercent(){
     {labels:['Yes','No','Not sure'],angles:[144,204,12],ask:[0,1,2]},
     {labels:['Math','English','Science','Art'],angles:[36,72,108,144],ask:[0,2,3]},
     {labels:['Reading','Gaming','Sports'],angles:[180,108,72],ask:[1,2]},
-    {labels:['Blue','Green','Yellow'],angles:[72,108,180],ask:[0,1]},
     {labels:['Pizza','Tacos','Pasta','Sushi'],angles:[126,108,72,54],ask:[0,3]},
     {labels:['Bus','Train','Car','Walk'],angles:[90,54,144,72],ask:[0,1,2]},
-    {labels:['Small','Medium','Large'],angles:[117,99,144],ask:[0,1,2]},
-    {labels:['Autumn','Winter','Spring','Summer'],angles:[72,108,90,90],ask:[0,1]},
     {labels:['Chrome','Safari','Edge','Other'],angles:[201.6,72,50.4,36],ask:[0,2]}
   ]);
   const ss=angleSectors(set.labels,set.angles,{showAngleInDiagram:true});
   const asks=shuffle(set.ask).slice(0,Math.min(2,set.ask.length));
-  return{kind:'pie',skillLabel:'Convert degrees to percent',calculatorAllowed:true,percentTickStep:0,
+  return{kind:'pie',signature:'d2p-'+set.labels.join('-'),skillLabel:'Convert degrees to percent',calculatorAllowed:true,percentTickStep:0,
     scenario:'Calculator allowed. The sector angles are shown in the circle diagram. Convert degrees to percent.',
     sectors:ss,caption:'Use angle divided by 360, then multiply by 100.',
     steps:asks.map(i=>step('What percent is '+ss[i].label+'?',pct(ss[i].percent),numberCheck(ss[i].percent),'Angle divided by 360 times 100.',''))
   };
 }
 
-/* Amount mode */
 function genAmountFromPercent(){
   const set=pick([
-    {labels:['Talk on phone','Eat','Send SMS','Use GPS'],perc:[50,25,12.5,12.5],total:4000,ask:[1,2]},
-    {labels:['Cats','Dogs','Fish'],perc:[50,30,20],total:200,ask:[0,2]},
-    {labels:['Walk','Bus','Bike'],perc:[50,25,25],total:240,ask:[1,2]},
-    {labels:['Gotaland','Svealand','Norrland'],perc:[21,20,59],total:450000,ask:[2]},
-    {labels:['Copper','Aluminium','Zinc','Tin'],perc:[89,5,5,1],total:891,ask:[0]},
-    {labels:['Pizza','Tacos','Pasta','Sushi'],perc:[35,30,20,15],total:200,ask:[0,3]},
-    {labels:['Video games','Sports','Reading','Music'],perc:[45,25,20,10],total:80,ask:[0,2]},
-    {labels:['Train','Bus','Car','Bike'],perc:[15,35,40,10],total:600,ask:[1,2]},
-    {labels:['Homework','Free time','Sleep','School'],perc:[10,25,35,30],total:24,ask:[1,2]},
-    {labels:['Apple','Orange','Banana','Pear'],perc:[20,30,25,25],total:160,ask:[1,2]},
-    {labels:['Morning','Afternoon','Evening'],perc:[20,45,35],total:180,ask:[1,2]},
-    {labels:['Dogs','Cats','Fish','Other'],perc:[32.5,27.5,25,15],total:400,ask:[0,1]}
+    {labels:['Talk on phone','Eat','Send SMS','Use GPS'],perc:[50,25,12.5,12.5],total:4000,ask:[1,2],context:'people'},
+    {labels:['Cats','Dogs','Fish'],perc:[50,30,20],total:200,ask:[0,2],context:'students'},
+    {labels:['Walk','Bus','Bike'],perc:[50,25,25],total:240,ask:[1,2],context:'students'},
+    {labels:['Gotaland','Svealand','Norrland'],perc:[21,20,59],total:100000,ask:[2],context:'people'},
+    {labels:['Copper','Aluminium','Zinc','Tin'],perc:[89,5,5,1],total:900,ask:[0,1],context:'items'},
+    {labels:['Pizza','Tacos','Pasta','Sushi'],perc:[35,30,20,15],total:200,ask:[0,3],context:'students'},
+    {labels:['Video games','Sports','Reading','Music'],perc:[45,25,20,10],total:80,ask:[0,2],context:'students'},
+    {labels:['Train','Bus','Car','Bike'],perc:[15,35,40,10],total:600,ask:[1,2],context:'people'},
+    {labels:['Apple','Orange','Banana','Pear'],perc:[20,30,25,25],total:160,ask:[1,2],context:'items'},
+    {labels:['Dogs','Cats','Fish','Other'],perc:[32.5,27.5,25,15],total:400,ask:[0,1],context:'students'}
   ]);
   const ss=sectors(set.labels,set.perc,{showPercent:true});
-  const i=pick(set.ask),amount=round1(set.total*ss[i].percent/100),calc=amountCalcNeeded(set.total,ss[i].percent);
-  return{kind:'pie',skillLabel:'Calculate amount from percent',calculatorAllowed:calc,percentTickStep:0,
-    scenario:(calc?'Calculator allowed. ':'No calculator needed. ')+'The circle diagram shows percentages. The total is '+fmt(set.total)+'.',
+  const i=pick(set.ask);
+  const info=amountInfo(set.total,ss[i].percent,'percent',set.context);
+  const calc=calcNeededForPercentAmount(set.total,ss[i].percent);
+  const roundText=info.roundedNeeded?' Round to the nearest whole number.':'';
+  return{kind:'pie',signature:'amtp-'+set.labels.join('-')+'-'+i,skillLabel:'Calculate amount from percent',calculatorAllowed:calc,percentTickStep:0,
+    scenario:(calc?'Calculator allowed. ':'No calculator needed. ')+'The circle diagram shows percentages. The total is '+fmt(set.total)+'.'+roundText,
     sectors:ss,caption:'Use percent of the total.',
     steps:[
       step('What percent is '+ss[i].label+'?',pct(ss[i].percent),numberCheck(ss[i].percent),'Read the percent from the diagram.',''),
-      step('How many are in '+ss[i].label+'?',fmt(amount),numberCheck(amount),'Percent as decimal x total.','')
+      step(makeAmountPrompt(ss[i].label,set.context,info.roundedNeeded),fmt(info.answer),numberCheck(info.answer),'Percent as decimal x total.','')
     ]};
 }
 function genAmountFromDegrees(){
   const set=pick([
-    {labels:['0-30 min','31-60 min','More than one hour'],angles:[150,90,120],total:9000,ask:2},
-    {labels:['Yes','No','Not sure'],angles:[144,204,12],known:'400 people answered Yes.',ask:0,total:1000},
-    {labels:['Yes','No','Not sure'],angles:[144,204,12],total:1000,ask:1},
-    {labels:['Blue','Green','Yellow'],angles:[72,108,180],total:500,ask:1},
-    {labels:['Bus','Train','Car','Walk'],angles:[90,54,144,72],total:2000,ask:2},
-    {labels:['Pizza','Tacos','Pasta','Sushi'],angles:[126,108,72,54],total:240,ask:0},
-    {labels:['Reading','Gaming','Sports'],angles:[180,108,72],total:300,ask:1},
-    {labels:['Math','English','Science','Art'],angles:[36,72,108,144],total:120,ask:3},
-    {labels:['Small','Medium','Large'],angles:[117,99,144],total:720,ask:2},
-    {labels:['Chrome','Safari','Edge','Other'],angles:[201.6,72,50.4,36],total:500,ask:0}
+    {labels:['0-30 min','31-60 min','More than one hour'],angles:[150,90,120],total:9000,ask:2,context:'people'},
+    {labels:['Yes','No','Not sure'],angles:[144,204,12],total:900,ask:1,context:'people'},
+    {labels:['Yes','No','Not sure'],angles:[144,204,12],total:900,ask:2,context:'people'},
+    {labels:['Blue','Green','Yellow'],angles:[72,108,180],total:500,ask:1,context:'students'},
+    {labels:['Bus','Train','Car','Walk'],angles:[90,54,144,72],total:2000,ask:2,context:'people'},
+    {labels:['Pizza','Tacos','Pasta','Sushi'],angles:[126,108,72,54],total:720,ask:0,context:'students'},
+    {labels:['Reading','Gaming','Sports'],angles:[180,108,72],total:300,ask:1,context:'students'},
+    {labels:['Math','English','Science','Art'],angles:[36,72,108,144],total:120,ask:3,context:'students'},
+    {labels:['Small','Medium','Large'],angles:[117,99,144],total:720,ask:2,context:'items'},
+    {labels:['Chrome','Safari','Edge','Other'],angles:[201.6,72,50.4,36],total:500,ask:0,context:'people'}
   ]);
   const ss=angleSectors(set.labels,set.angles,{showAngleInDiagram:true});
-  const i=set.ask,amount=round1(set.total*ss[i].percent/100);
-  return{kind:'pie',skillLabel:'Calculate amount from degrees',calculatorAllowed:true,percentTickStep:0,
-    scenario:(set.known?set.known+' ':'')+'The circle diagram shows sector angles. The total is '+fmt(set.total)+'.',
+  const i=set.ask;
+  const info=amountInfo(set.total,ss[i].angle,'degrees',set.context);
+  const calc=calcNeededForAngleAmount(set.total,ss[i].angle);
+  const roundText=info.roundedNeeded?' Round to the nearest whole number.':'';
+  return{kind:'pie',signature:'amtd-'+set.labels.join('-')+'-'+i,skillLabel:'Calculate amount from degrees',calculatorAllowed:calc,percentTickStep:0,
+    scenario:(calc?'Calculator allowed. ':'No calculator needed. ')+'The circle diagram shows sector angles. The total is '+fmt(set.total)+'.'+roundText,
     sectors:ss,caption:'Convert degrees to percent first, then calculate the amount.',
     steps:[
       step('What percent is '+ss[i].label+'?',pct(ss[i].percent),numberCheck(ss[i].percent),'Angle divided by 360 times 100.',''),
-      step('How many are in '+ss[i].label+'?',fmt(amount),numberCheck(amount),'Use that percent of the total.','')
+      step(makeAmountPrompt(ss[i].label,set.context,info.roundedNeeded),fmt(info.answer),numberCheck(info.answer),'Use that percent of the total.','')
     ]};
 }
 
-/* Multi-step mode */
 function genMissingAndSplit(){
-  const ss=sectors(['Talk on phone','Eat','Send SMS','Use GPS'],[50,25,12.5,12.5],{});
-  return{kind:'pie',skillLabel:'Multi-step: missing percent and equal split',calculatorAllowed:false,percentTickStep:0,
+  const ss=sectors(['Talk on phone','Eat','Send SMS','Use GPS'],[50,25,12.5,12.5],{showPercentInDiagram:true});
+  ss[2].showPercentInDiagram=false; ss[3].showPercentInDiagram=false;
+  return{kind:'pie',signature:'missing-split',skillLabel:'Multi-step: missing percent and equal split',calculatorAllowed:false,percentTickStep:0,
     scenario:'The circle diagram shows what people usually do while driving. SMS and GPS have the same percentage.',
     sectors:ss,caption:'Find the remaining percent, then split it equally.',
     steps:[
@@ -337,7 +358,7 @@ function genMissingPercentToAngle(){
     {labels:['Homework','Free time','Sleep','School'],perc:[10,25,35,30],hide:2}
   ]);
   const ss=sectors(set.labels,set.perc,{showPercent:true});ss[set.hide].showPercent=false;const i=set.hide;
-  return{kind:'pie',skillLabel:'Multi-step: missing percent to degrees',calculatorAllowed:true,percentTickStep:0,
+  return{kind:'pie',signature:'missing-angle-'+set.labels.join('-'),skillLabel:'Multi-step: missing percent to degrees',calculatorAllowed:true,percentTickStep:0,
     scenario:'Calculator allowed. One percentage is missing from the circle diagram.',
     sectors:ss,caption:'Find the missing percent, then convert it to degrees.',
     steps:[
@@ -354,8 +375,10 @@ function genVotesBackward(){
     {labels:['Pizza','Tacos','Pasta'],perc:[40,35,25],knownIndex:0,knownVotes:80,askIndex:1},
     {labels:['Morning','Afternoon','Evening'],perc:[25,30,45],knownIndex:0,knownVotes:60,askIndex:2}
   ]);
-  const ss=sectors(set.labels,set.perc,{});const total=set.knownVotes/(set.perc[set.knownIndex]/100);const askVotes=total*(set.perc[set.askIndex]/100);
-  return{kind:'pie',skillLabel:'Multi-step: work backward from a known part',calculatorAllowed:false,percentTickStep:10,
+  const ss=sectors(set.labels,set.perc,{showPercent:true});
+  const total=set.knownVotes/(set.perc[set.knownIndex]/100);
+  const askVotes=total*(set.perc[set.askIndex]/100);
+  return{kind:'pie',signature:'votes-back-'+set.labels.join('-'),skillLabel:'Multi-step: work backward from a known part',calculatorAllowed:false,percentTickStep:0,
     scenario:'The diagram shows the result of a vote. '+set.labels[set.knownIndex]+' received '+set.knownVotes+' votes.',
     sectors:ss,caption:'Use the known part to find the total, then find the asked category.',
     steps:[
@@ -366,8 +389,8 @@ function genVotesBackward(){
 }
 function genKnownAmountFromAngleFindTotal(){
   const ss=angleSectors(['Yes','No','Not sure'],[144,204,12],{showAngleInDiagram:true});
-  return{kind:'pie',skillLabel:'Multi-step: known amount and angle',calculatorAllowed:true,percentTickStep:0,
-    scenario:'400 people answered Yes in the survey. The circle diagram shows the sector angles.',
+  return{kind:'pie',signature:'known-angle-total',skillLabel:'Multi-step: known amount and angle',calculatorAllowed:true,percentTickStep:0,
+    scenario:'Calculator allowed. 400 people answered Yes in the survey. The circle diagram shows the sector angles.',
     sectors:ss,caption:'Use the Yes angle to find the percent, then work backward to find the total.',
     steps:[
       step('What percent answered Yes?',pct(40),numberCheck(40),'144 divided by 360 times 100.',''),
@@ -379,11 +402,11 @@ function genTableFractionPercent(){
   if(variant==='fraction'){
     const set=pick([{labels:['Yes always','Yes in small planes','Sometimes','No not at all'],counts:[400,100,500,2000],ask:0},{labels:['Red','Blue','Green','Yellow'],counts:[150,150,100,200],ask:2}]);
     const total=set.counts.reduce((a,b)=>a+b,0),s=simp(set.counts[set.ask],total);
-    return{kind:'table',skillLabel:'Multi-step: table to fraction',calculatorAllowed:false,tableHeadLeft:'Category',tableHeadRight:'Count',rows:set.labels.map((label,i)=>({label,count:set.counts[i]})),scenario:'A survey result is shown in the table.',caption:'Write the fraction in simplest form.',steps:[step('How many responses are there in total?',fmt(total),wholeCheck(total),'Add all counts.',''),step('What fraction chose '+set.labels[set.ask]+'? Give your answer in simplest form.',s[0]+'/'+s[1],fractionCheck(s[0],s[1]),'Category count over total, then simplify.','','text')]};
+    return{kind:'table',signature:'table-frac-'+set.labels.join('-'),skillLabel:'Multi-step: table to fraction',calculatorAllowed:false,tableHeadLeft:'Category',tableHeadRight:'Count',rows:set.labels.map((label,i)=>({label,count:set.counts[i]})),scenario:'A survey result is shown in the table.',caption:'Write the fraction in simplest form.',steps:[step('How many responses are there in total?',fmt(total),wholeCheck(total),'Add all counts.',''),step('What fraction chose '+set.labels[set.ask]+'? Give your answer in simplest form.',s[0]+'/'+s[1],fractionCheck(s[0],s[1]),'Category count over total, then simplify.','','text')]};
   }
   const set=pick([{labels:['Apple','Orange','Banana','Pear'],counts:[150,180,120,150],ask:1},{labels:['Beginner','Intermediate','Advanced'],counts:[125,375,500],ask:0}]);
   const total=set.counts.reduce((a,b)=>a+b,0),percent=round1(set.counts[set.ask]/total*100);
-  return{kind:'table',skillLabel:'Multi-step: table to percent',calculatorAllowed:false,tableHeadLeft:'Category',tableHeadRight:'Count',rows:set.labels.map((label,i)=>({label,count:set.counts[i]})),scenario:'Use the table to find the percentage for one category.',caption:'Answer with the number only. Do not type the percent sign.',steps:[step('How many responses are there in total?',fmt(total),wholeCheck(total),'Add the values in the table.',''),step('What percent chose '+set.labels[set.ask]+'?',pct(percent),numberCheck(percent),'Divide the category count by the total, then multiply by 100.','')]};
+  return{kind:'table',signature:'table-pct-'+set.labels.join('-'),skillLabel:'Multi-step: table to percent',calculatorAllowed:false,tableHeadLeft:'Category',tableHeadRight:'Count',rows:set.labels.map((label,i)=>({label,count:set.counts[i]})),scenario:'Use the table to find the percentage for one category.',caption:'Answer with the number only. Do not type the percent sign.',steps:[step('How many responses are there in total?',fmt(total),wholeCheck(total),'Add the values in the table.',''),step('What percent chose '+set.labels[set.ask]+'?',pct(percent),numberCheck(percent),'Divide the category count by the total, then multiply by 100.','')]};
 }
 
 function skillName(mode){return{conversion:'Conversion',amount:'Amount',multistep:'Multi-Step',mixed:'Mixed'}[mode]||'Mixed'}
@@ -393,15 +416,28 @@ function generateByMode(mode){
   if(mode==='multistep')return pick([genMissingAndSplit,genMissingPercentToAngle,genVotesBackward,genKnownAmountFromAngleFindTotal,genTableFractionPercent])();
   return pick([genPercentToDegrees,genDegreesToPercent,genAmountFromPercent,genAmountFromDegrees,genMissingAndSplit,genMissingPercentToAngle,genVotesBackward,genKnownAmountFromAngleFindTotal,genTableFractionPercent])();
 }
-function generateQuestions(count=10){const out=[];for(let i=0;i<count;i++)out.push(generateByMode(app.skillMode));return out}
+function generateQuestions(count=10){
+  const out=[],used=new Set();
+  let guard=0;
+  while(out.length<count && guard<count*80){
+    guard++;
+    const q=generateByMode(app.skillMode);
+    const sig=q.signature || (q.skillLabel+'-'+q.scenario+'-'+(q.steps[0]?.prompt||''));
+    if(!used.has(sig) || guard>count*50){
+      used.add(sig);
+      out.push(q);
+    }
+  }
+  while(out.length<count) out.push(generateByMode(app.skillMode));
+  return out;
+}
 function generateGameSet(){resetGame();app.questions=generateQuestions(10);renderQuestion()}
 
-/* Worksheet */
 function worksheetPie(q){
   const cx=160,cy=160,r=110;let a=0,paths='',text='';
-  q.sectors.forEach(s=>{const end=a+s.angle;paths+='<path d="'+sectorPath(cx,cy,r,a,end)+'" fill="'+s.color+'" stroke="var(--line)" stroke-width="2.5"></path>';const mid=a+s.angle/2;if(s.showAngleInDiagram){const p=polar(cx,cy,r*.35,mid);text+='<text x="'+p.x+'" y="'+p.y+'" fill="var(--text)" font-size="13" text-anchor="middle" dominant-baseline="middle" font-weight="700">'+fmt(s.angle)+'°</text>'}a=end});
+  q.sectors.forEach(s=>{const end=a+s.angle;paths+='<path d="'+sectorPath(cx,cy,r,a,end)+'" fill="'+s.color+'" stroke="var(--line)" stroke-width="2.5"></path>';const mid=a+s.angle/2;if(s.showAngleInDiagram){const p=polar(cx,cy,r*.35,mid);text+='<text x="'+p.x+'" y="'+p.y+'" fill="var(--text)" font-size="13" text-anchor="middle" dominant-baseline="middle" font-weight="700">'+fmt(s.angle)+'°</text>'}if(s.showPercentInDiagram){const p=polar(cx,cy,r*.63,mid);text+='<text x="'+p.x+'" y="'+p.y+'" fill="var(--text)" font-size="13" text-anchor="middle" dominant-baseline="middle" font-weight="700">'+fmt(s.percent)+'%</text>'}a=end});
   const leg=q.sectors.map(s=>'<div class="legend-item"><div class="swatch" style="background:'+s.color+'"></div><div>'+legendText(s)+'</div></div>').join('');
-  return '<div style="display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:16px;align-items:center"><svg viewBox="0 0 320 320" width="100%" height="220">'+paths+tickMarks(cx,cy,r,q.percentTickStep||0)+text+'<circle cx="160" cy="160" r="110" fill="none" stroke="var(--line)" stroke-width="3"></circle></svg><div class="legend">'+leg+'</div></div>';
+  return '<div style="display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:16px;align-items:center"><svg viewBox="0 0 320 320" width="100%" height="260">'+paths+tickMarks(cx,cy,r,q.percentTickStep||0)+text+'<circle cx="160" cy="160" r="110" fill="none" stroke="var(--line)" stroke-width="3"></circle></svg><div class="legend">'+leg+'</div></div>';
 }
 function worksheetTable(q){return'<table><thead><tr><th>'+(q.tableHeadLeft||'Category')+'</th><th>'+(q.tableHeadRight||'Count')+'</th></tr></thead><tbody>'+q.rows.map(r=>'<tr><td>'+r.label+'</td><td>'+r.count+'</td></tr>').join('')+'</tbody></table>'}
 function renderWorksheet(questions){
